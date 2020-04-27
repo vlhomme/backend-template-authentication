@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
+const passport = require("passport");
 
 //user model
 const User = require("../models/User");
@@ -55,6 +56,24 @@ router.post("/register", (req, res) => {
       }
     });
   }
+});
+
+// handle login
+router.post("/login", (req, res, next) => {
+  passport.authenticate("local", function (err, user, info) {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res.send(JSON.stringify(info));
+    }
+    req.logIn(user, function (err) {
+      if (err) {
+        return next(err);
+      }
+      return res.send(JSON.stringify(user));
+    });
+  })(req, res, next);
 });
 
 module.exports = router;

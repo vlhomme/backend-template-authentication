@@ -5,11 +5,14 @@ const User = require("../models/User");
 
 module.exports = (passport) => {
   passport.use(
-    new LocalStrategy({ usernameField: "mail" }, (email, password, done) => {
+    new LocalStrategy({ usernameField: "mail" }, (mail, password, done) => {
       //match user
       User.findOne({ mail: mail })
         .then((user) => {
           if (!user) {
+            console.log(
+              "someone tryed to authenticate with unexisting mail" + mail
+            );
             return done(null, false, { msg: "That email is not registered" });
           }
           // match password
@@ -17,8 +20,16 @@ module.exports = (passport) => {
             if (err) throw err;
 
             if (isMatch) {
+              console.log("a user tryed to authenticate with good login", user);
               return done(null, user);
             } else {
+              console.log(
+                'a user tryed to authenticate with bad login. Here is his mail : "',
+                user.mail,
+                '" user tryed this wrong password = "',
+                password,
+                '"'
+              );
               return done(null, false, { msg: "Password incorrect" });
             }
           });
@@ -27,6 +38,13 @@ module.exports = (passport) => {
     })
   );
 
-  // need to deserialize user according to passport documentation
-  // https://youtu.be/6FOq4cUdH8k?t=4219
+  passport.serializeUser(function (user, done) {
+    done(null, user.id);
+  });
+
+  passport.deserializeUser(function (id, done) {
+    User.findById(id, function (err, user) {
+      done(err, user);
+    });
+  });
 };

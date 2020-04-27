@@ -1,14 +1,30 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
+const session = require("express-session");
+const passport = require("passport");
 const cors = require("cors");
+// passport config
+require("./config/passport")(passport);
 
 const app = express();
 
 // parse application/x-www-form-urlencoded
 // app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
+
+// express session
+app.use(
+  session({
+    secret: "ehbvoefdb",
+    resave: true,
+    saveUninitialized: true,
+  })
+);
+
+// passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
 // enable cors for every domain
 app.use(cors());
